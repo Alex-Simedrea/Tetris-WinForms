@@ -34,7 +34,11 @@ namespace Tetris
             var users = tetrisUsersTableAdapter.GetData().FirstOrDefault(x => x.Username == username && x.Password == password);
             if (users != null)
             {
-                MessageBox.Show("Login successful");
+                //MessageBox.Show("Login successful");
+                var home = new Home(users.Id);
+                home.Show();
+                this.Hide();
+                home.FormClosed += (s, args) => this.Show();
             }
             else
             {
