@@ -67,5 +67,13 @@ namespace Tetris
             this.label4.Text = $"{user.AIPowerUps} remaining";
             this.label5.Text = $"{user.ClearRowPowerUps} remaining";
         }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            var highScoreGame = new HighScoreGame(user.Id);
+            highScoreGame.Show();
+            this.Hide();
+            highScoreGame.FormClosed += (s, args) => this.Show();
+        }
     }
 }

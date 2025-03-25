@@ -922,10 +922,9 @@ namespace Tetris.DatabaseDataSetTableAdapters {
             this._adapter.DeleteCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_ClearRowPowerUps", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "ClearRowPowerUps", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.InsertCommand = new global::System.Data.SqlClient.SqlCommand();
             this._adapter.InsertCommand.Connection = this.Connection;
-            this._adapter.InsertCommand.CommandText = @"INSERT INTO [dbo].[TetrisUsers] ([Id], [Username], [Password], [Gold], [HighScore], [Level], [AIPowerUps], [ClearRowPowerUps]) VALUES (@Id, @Username, @Password, @Gold, @HighScore, @Level, @AIPowerUps, @ClearRowPowerUps);
-SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPowerUps FROM TetrisUsers WHERE (Id = @Id)";
+            this._adapter.InsertCommand.CommandText = @"INSERT INTO [dbo].[TetrisUsers] ([Username], [Password], [Gold], [HighScore], [Level], [AIPowerUps], [ClearRowPowerUps]) VALUES (@Username, @Password, @Gold, @HighScore, @Level, @AIPowerUps, @ClearRowPowerUps);
+SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPowerUps FROM TetrisUsers WHERE (Id = SCOPE_IDENTITY())";
             this._adapter.InsertCommand.CommandType = global::System.Data.CommandType.Text;
-            this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Id", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Id", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Username", global::System.Data.SqlDbType.VarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Username", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Password", global::System.Data.SqlDbType.VarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Password", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Gold", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Gold", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
@@ -935,10 +934,9 @@ SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPower
             this._adapter.InsertCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@ClearRowPowerUps", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "ClearRowPowerUps", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand = new global::System.Data.SqlClient.SqlCommand();
             this._adapter.UpdateCommand.Connection = this.Connection;
-            this._adapter.UpdateCommand.CommandText = @"UPDATE [dbo].[TetrisUsers] SET [Id] = @Id, [Username] = @Username, [Password] = @Password, [Gold] = @Gold, [HighScore] = @HighScore, [Level] = @Level, [AIPowerUps] = @AIPowerUps, [ClearRowPowerUps] = @ClearRowPowerUps WHERE (([Id] = @Original_Id) AND ([Username] = @Original_Username) AND ([Password] = @Original_Password) AND ([Gold] = @Original_Gold) AND ([HighScore] = @Original_HighScore) AND ([Level] = @Original_Level) AND ([AIPowerUps] = @Original_AIPowerUps) AND ([ClearRowPowerUps] = @Original_ClearRowPowerUps));
+            this._adapter.UpdateCommand.CommandText = @"UPDATE [dbo].[TetrisUsers] SET [Username] = @Username, [Password] = @Password, [Gold] = @Gold, [HighScore] = @HighScore, [Level] = @Level, [AIPowerUps] = @AIPowerUps, [ClearRowPowerUps] = @ClearRowPowerUps WHERE (([Id] = @Original_Id) AND ([Username] = @Original_Username) AND ([Password] = @Original_Password) AND ([Gold] = @Original_Gold) AND ([HighScore] = @Original_HighScore) AND ([Level] = @Original_Level) AND ([AIPowerUps] = @Original_AIPowerUps) AND ([ClearRowPowerUps] = @Original_ClearRowPowerUps));
 SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPowerUps FROM TetrisUsers WHERE (Id = @Id)";
             this._adapter.UpdateCommand.CommandType = global::System.Data.CommandType.Text;
-            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Id", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Id", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Username", global::System.Data.SqlDbType.VarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Username", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Password", global::System.Data.SqlDbType.VarChar, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Password", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Gold", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Gold", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
@@ -954,6 +952,7 @@ SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPower
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_Level", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "Level", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_AIPowerUps", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "AIPowerUps", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
             this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Original_ClearRowPowerUps", global::System.Data.SqlDbType.Int, 0, global::System.Data.ParameterDirection.Input, 0, 0, "ClearRowPowerUps", global::System.Data.DataRowVersion.Original, false, null, "", "", ""));
+            this._adapter.UpdateCommand.Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Id", global::System.Data.SqlDbType.Int, 4, global::System.Data.ParameterDirection.Input, 0, 0, "Id", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
@@ -1078,25 +1077,24 @@ SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPower
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "17.0.0.0")]
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Insert, true)]
-        public virtual int Insert(int Id, string Username, string Password, int Gold, int HighScore, int Level, int AIPowerUps, int ClearRowPowerUps) {
-            this.Adapter.InsertCommand.Parameters[0].Value = ((int)(Id));
+        public virtual int Insert(string Username, string Password, int Gold, int HighScore, int Level, int AIPowerUps, int ClearRowPowerUps) {
             if ((Username == null)) {
                 throw new global::System.ArgumentNullException("Username");
             }
             else {
-                this.Adapter.InsertCommand.Parameters[1].Value = ((string)(Username));
+                this.Adapter.InsertCommand.Parameters[0].Value = ((string)(Username));
             }
             if ((Password == null)) {
                 throw new global::System.ArgumentNullException("Password");
             }
             else {
-                this.Adapter.InsertCommand.Parameters[2].Value = ((string)(Password));
+                this.Adapter.InsertCommand.Parameters[1].Value = ((string)(Password));
             }
-            this.Adapter.InsertCommand.Parameters[3].Value = ((int)(Gold));
-            this.Adapter.InsertCommand.Parameters[4].Value = ((int)(HighScore));
-            this.Adapter.InsertCommand.Parameters[5].Value = ((int)(Level));
-            this.Adapter.InsertCommand.Parameters[6].Value = ((int)(AIPowerUps));
-            this.Adapter.InsertCommand.Parameters[7].Value = ((int)(ClearRowPowerUps));
+            this.Adapter.InsertCommand.Parameters[2].Value = ((int)(Gold));
+            this.Adapter.InsertCommand.Parameters[3].Value = ((int)(HighScore));
+            this.Adapter.InsertCommand.Parameters[4].Value = ((int)(Level));
+            this.Adapter.InsertCommand.Parameters[5].Value = ((int)(AIPowerUps));
+            this.Adapter.InsertCommand.Parameters[6].Value = ((int)(ClearRowPowerUps));
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.InsertCommand.Connection.State;
             if (((this.Adapter.InsertCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -1118,7 +1116,6 @@ SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPower
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
         public virtual int Update(
-                    int Id, 
                     string Username, 
                     string Password, 
                     int Gold, 
@@ -1133,43 +1130,44 @@ SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPower
                     int Original_HighScore, 
                     int Original_Level, 
                     int Original_AIPowerUps, 
-                    int Original_ClearRowPowerUps) {
-            this.Adapter.UpdateCommand.Parameters[0].Value = ((int)(Id));
+                    int Original_ClearRowPowerUps, 
+                    int Id) {
             if ((Username == null)) {
                 throw new global::System.ArgumentNullException("Username");
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[1].Value = ((string)(Username));
+                this.Adapter.UpdateCommand.Parameters[0].Value = ((string)(Username));
             }
             if ((Password == null)) {
                 throw new global::System.ArgumentNullException("Password");
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[2].Value = ((string)(Password));
+                this.Adapter.UpdateCommand.Parameters[1].Value = ((string)(Password));
             }
-            this.Adapter.UpdateCommand.Parameters[3].Value = ((int)(Gold));
-            this.Adapter.UpdateCommand.Parameters[4].Value = ((int)(HighScore));
-            this.Adapter.UpdateCommand.Parameters[5].Value = ((int)(Level));
-            this.Adapter.UpdateCommand.Parameters[6].Value = ((int)(AIPowerUps));
-            this.Adapter.UpdateCommand.Parameters[7].Value = ((int)(ClearRowPowerUps));
-            this.Adapter.UpdateCommand.Parameters[8].Value = ((int)(Original_Id));
+            this.Adapter.UpdateCommand.Parameters[2].Value = ((int)(Gold));
+            this.Adapter.UpdateCommand.Parameters[3].Value = ((int)(HighScore));
+            this.Adapter.UpdateCommand.Parameters[4].Value = ((int)(Level));
+            this.Adapter.UpdateCommand.Parameters[5].Value = ((int)(AIPowerUps));
+            this.Adapter.UpdateCommand.Parameters[6].Value = ((int)(ClearRowPowerUps));
+            this.Adapter.UpdateCommand.Parameters[7].Value = ((int)(Original_Id));
             if ((Original_Username == null)) {
                 throw new global::System.ArgumentNullException("Original_Username");
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[9].Value = ((string)(Original_Username));
+                this.Adapter.UpdateCommand.Parameters[8].Value = ((string)(Original_Username));
             }
             if ((Original_Password == null)) {
                 throw new global::System.ArgumentNullException("Original_Password");
             }
             else {
-                this.Adapter.UpdateCommand.Parameters[10].Value = ((string)(Original_Password));
+                this.Adapter.UpdateCommand.Parameters[9].Value = ((string)(Original_Password));
             }
-            this.Adapter.UpdateCommand.Parameters[11].Value = ((int)(Original_Gold));
-            this.Adapter.UpdateCommand.Parameters[12].Value = ((int)(Original_HighScore));
-            this.Adapter.UpdateCommand.Parameters[13].Value = ((int)(Original_Level));
-            this.Adapter.UpdateCommand.Parameters[14].Value = ((int)(Original_AIPowerUps));
-            this.Adapter.UpdateCommand.Parameters[15].Value = ((int)(Original_ClearRowPowerUps));
+            this.Adapter.UpdateCommand.Parameters[10].Value = ((int)(Original_Gold));
+            this.Adapter.UpdateCommand.Parameters[11].Value = ((int)(Original_HighScore));
+            this.Adapter.UpdateCommand.Parameters[12].Value = ((int)(Original_Level));
+            this.Adapter.UpdateCommand.Parameters[13].Value = ((int)(Original_AIPowerUps));
+            this.Adapter.UpdateCommand.Parameters[14].Value = ((int)(Original_ClearRowPowerUps));
+            this.Adapter.UpdateCommand.Parameters[15].Value = ((int)(Id));
             global::System.Data.ConnectionState previousConnectionState = this.Adapter.UpdateCommand.Connection.State;
             if (((this.Adapter.UpdateCommand.Connection.State & global::System.Data.ConnectionState.Open) 
                         != global::System.Data.ConnectionState.Open)) {
@@ -1191,7 +1189,7 @@ SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPower
         [global::System.ComponentModel.Design.HelpKeywordAttribute("vs.data.TableAdapter")]
         [global::System.ComponentModel.DataObjectMethodAttribute(global::System.ComponentModel.DataObjectMethodType.Update, true)]
         public virtual int Update(string Username, string Password, int Gold, int HighScore, int Level, int AIPowerUps, int ClearRowPowerUps, int Original_Id, string Original_Username, string Original_Password, int Original_Gold, int Original_HighScore, int Original_Level, int Original_AIPowerUps, int Original_ClearRowPowerUps) {
-            return this.Update(Original_Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPowerUps, Original_Id, Original_Username, Original_Password, Original_Gold, Original_HighScore, Original_Level, Original_AIPowerUps, Original_ClearRowPowerUps);
+            return this.Update(Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPowerUps, Original_Id, Original_Username, Original_Password, Original_Gold, Original_HighScore, Original_Level, Original_AIPowerUps, Original_ClearRowPowerUps, Original_Id);
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
