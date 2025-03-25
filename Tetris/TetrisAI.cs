@@ -15,7 +15,6 @@ namespace Tetris
             public double Score { get; set; }
         }
 
-        // Weights for different evaluation criteria
         private static readonly double HeightWeight = -0.510066;
         private static readonly double LinesWeight = 0.760667;
         private static readonly double HolesWeight = -0.35663;

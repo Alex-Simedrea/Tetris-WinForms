@@ -1,6 +1,6 @@
 ﻿namespace Tetris
 {
-    partial class Form1
+    partial class Game
     {
         /// <summary>
         /// Required designer variable.
@@ -151,6 +151,7 @@
             this.trackBar1.TabIndex = 10;
             this.trackBar1.TabStop = false;
             this.trackBar1.Value = 1;
+            this.trackBar1.ValueChanged += new System.EventHandler(this.trackBar1_ValueChanged);
             // 
             // Form1
             // 

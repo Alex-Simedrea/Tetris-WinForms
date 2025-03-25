@@ -78,7 +78,6 @@ namespace Tetris
                             { 1, 1, 0 }
                         }
                     }
-                    // new shapes can be added here..
                 };
         }
 
@@ -101,13 +100,12 @@ namespace Tetris
         {
             var shape = shapesArray[random.Next(shapesArray.Length)];
 
-            // Create a new instance of the shape to avoid modifying the template
             var newShape = new Shape
             {
                 Width = shape.Width,
                 Height = shape.Height,
                 Blocks = (int[,])shape.Blocks.Clone(),
-                Color = GetRandomColor() // Assign a random color here
+                Color = GetRandomColor()
             };
 
             return newShape;

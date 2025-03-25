@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Tetris
@@ -12,7 +13,7 @@ namespace Tetris
         public Color Color;
     }
 
-    public partial class Form1 : Form
+    public partial class Game : Form
     {
         private Shape currentShape;
         private Shape nextShape;
@@ -39,7 +40,7 @@ namespace Tetris
 
         private TetrisAI ai = new TetrisAI();
         private bool aiMode = false;
-        private Timer aiTimer = new Timer { Interval = 1 };
+        private Timer aiTimer = new Timer { Interval = 500 };
 
         private bool isPaused = false;
 
@@ -52,11 +53,10 @@ namespace Tetris
             public const int TRIPLE_LINE_CLEAR = 500;
         }
 
-        public Form1()
+        public Game()
         {
             InitializeComponent();
 
-            // Set KeyPreview to true so the form receives key events first
             this.KeyPreview = true;
 
             foreach (Control control in this.Controls)
@@ -135,7 +135,7 @@ namespace Tetris
         /// </summary>
         private void DrawGrid(Graphics graphics)
         {
-            using (Pen pen = new Pen(Color.DarkGray, 1))
+            using (Pen pen = new Pen(Color.DimGray, 1))
             {
                 for (int i = 0; i < canvasWidth; i++)
                 {
@@ -201,23 +201,11 @@ namespace Tetris
             if (currentY < 0)
             {
                 //this.label4.Text = $"{printShape(shape)}";
-                printShape(shape);
                 aiTimer.Stop();
                 timer.Stop();
                 MessageBox.Show("Game Over");
                 //Application.Restart();
                 aiTimer.Start();
-            }
-        }
-
-        private void printShape(Shape shape)
-        {
-            for (int i = 0; i < shape.Blocks.GetLength(0); ++i)
-            {
-                for (int j = 0; j < shape.Blocks.GetLength(1); ++j)
-                {
-                    Console.Write(shape.Blocks[i, j]);
-                }
             }
         }
 
@@ -297,7 +285,7 @@ namespace Tetris
                     if (currentShape.Blocks[j, i] == 1)
                     {
                         using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, currentShape.Color)))
-                        using (Pen pen = new Pen(Color.DarkGray, 1))
+                        using (Pen pen = new Pen(Color.DimGray, 1))
                         {
                             workingGraphics.FillRectangle(brush,
                                 (currentX + i) * blockSize,
@@ -322,7 +310,7 @@ namespace Tetris
                     if (currentShape.Blocks[j, i] == 1)
                     {
                         using (SolidBrush brush = new SolidBrush(currentShape.Color))
-                        using (Pen pen = new Pen(Color.DarkGray, 1))
+                        using (Pen pen = new Pen(Color.DimGray, 1))
                         {
                             workingGraphics.FillRectangle(brush,
                                 (currentX + i) * blockSize,
@@ -413,7 +401,8 @@ namespace Tetris
             if (clearedLines > 0)
             {
                 int lineScore = 0;
-                switch (clearedLines) {
+                switch (clearedLines)
+                {
                     case 1:
                         lineScore = ScoreSystem.SINGLE_LINE_CLEAR;
                         break;
@@ -492,7 +481,7 @@ namespace Tetris
                     if (canvasBlockArray[i, j].IsFilled)
                     {
                         using (SolidBrush brush = new SolidBrush(canvasBlockArray[i, j].Color))
-                        using (Pen pen = new Pen(Color.DarkGray, 1))
+                        using (Pen pen = new Pen(Color.DimGray, 1))
                         {
                             canvasGraphics.FillRectangle(brush,
                                 i * blockSize, j * blockSize, blockSize, blockSize);
@@ -504,7 +493,7 @@ namespace Tetris
                     {
                         canvasGraphics.FillRectangle(Brushes.Black,
                             i * blockSize, j * blockSize, blockSize, blockSize);
-                        using (Pen pen = new Pen(Color.DarkGray, 1))
+                        using (Pen pen = new Pen(Color.DimGray, 1))
                         {
                             canvasGraphics.DrawRectangle(pen,
                                 i * blockSize, j * blockSize, blockSize, blockSize);
@@ -546,7 +535,7 @@ namespace Tetris
                     if (shape.Blocks[i, j] == 1)
                     {
                         using (SolidBrush brush = new SolidBrush(shape.Color))
-                        using (Pen pen = new Pen(Color.DarkGray, 1))
+                        using (Pen pen = new Pen(Color.DimGray, 1))
                         {
                             nextShapeGraphics.FillRectangle(brush,
                                 (startX + j) * blockSize, (startY + i) * blockSize,
@@ -619,7 +608,7 @@ namespace Tetris
                     if (heldShape.Blocks[i, j] == 1)
                     {
                         using (SolidBrush brush = new SolidBrush(heldShape.Color))
-                        using (Pen pen = new Pen(Color.DarkGray, 1))
+                        using (Pen pen = new Pen(Color.DimGray, 1))
                         {
                             holdGraphics.FillRectangle(brush,
                                 (startX + j) * blockSize, (startY + i) * blockSize,
@@ -645,15 +634,11 @@ namespace Tetris
             int finalY = GetProjectedY();
             int dropDistance = finalY - currentY;
 
-            // Optional: Add points based on drop distance
             AddScore(dropDistance * ScoreSystem.HARD_DROP_MULTIPLIER);
 
             // Move the piece
             currentY = finalY;
             DrawShape();
-
-            // Visual feedback (flash effect)
-            //FlashHardDrop();
 
             // Handle piece placement
             canvasBitmap = new Bitmap(workingBitmap);
@@ -771,11 +756,17 @@ namespace Tetris
             {
                 button2.BackColor = Color.Green;
                 button2.ForeColor = Color.White;
-            } else
+            }
+            else
             {
                 button2.BackColor = SystemColors.Control;
                 button2.ForeColor = SystemColors.ControlText;
             }
+        }
+
+        private void trackBar1_ValueChanged(object sender, EventArgs e)
+        {
+            aiTimer.Interval = (trackBar1.Maximum - trackBar1.Value) + 1;
         }
     }
 }
