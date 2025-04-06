@@ -31,19 +31,27 @@ namespace Tetris
             var username = textBox1.Text;
             var password = textBox2.Text;
 
-            var users = tetrisUsersTableAdapter.GetData().FirstOrDefault(x => x.Username == username && x.Password == password);
-            if (users != null)
+            var err = Validators.ValidateLogin(username, password);
+            if (err != null)
             {
-                //MessageBox.Show("Login successful");
-                var home = new Home(users.Id);
-                home.Show();
-                this.Hide();
-                home.FormClosed += (s, args) => this.Show();
+                MessageBox.Show(err);
+                return;
             }
-            else
+
+            button2.Text = "Loading...";
+            button2.Enabled = false;
+
+            var users = tetrisUsersTableAdapter.GetData().FirstOrDefault(x => x.Username == username && PasswordHasher.VerifyPassword(password, x.Password));
+            if (users == null)
             {
-                MessageBox.Show("Invalid username or password");
+                MessageBox.Show(Validators.BAD_LOGIN_ERROR);
+                return;
             }
+
+            var home = new Home(users.Id);
+            home.Show();
+            this.Hide();
+            home.FormClosed += (s, args) => this.Show();
         }
 
         private void button1_Click(object sender, EventArgs e)

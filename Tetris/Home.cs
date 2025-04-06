@@ -75,5 +75,13 @@ namespace Tetris
             this.Hide();
             highScoreGame.FormClosed += (s, args) => this.Show();
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            var levelGame = new LevelGame(user.Id);
+            levelGame.Show();
+            this.Hide();
+            levelGame.FormClosed += (s, args) => this.Show();
+        }
     }
 }

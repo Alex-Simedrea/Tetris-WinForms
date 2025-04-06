@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Tetris
@@ -22,22 +16,27 @@ namespace Tetris
         {
             var username = textBox1.Text;
             var password = textBox2.Text;
+            var repeatPassword = textBox3.Text;
+
+            var err = Validators.ValidateSignUp(username, password, repeatPassword);
+            if (err != null)
+            {
+                MessageBox.Show(err);
+                return;
+            }
+
+            button1.Text = "Loading...";
+            button1.Enabled = false;
 
             var users = tetrisUsersTableAdapter.GetData().FirstOrDefault(x => x.Username == username);
 
             if (users != null)
             {
-                MessageBox.Show("Username already exists");
+                MessageBox.Show(Validators.USERNAME_TAKEN_ERROR);
                 return;
             }
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-            {
-                MessageBox.Show("Username and password cannot be empty");
-                return;
-            }
-
-            tetrisUsersTableAdapter.InsertWithCredentials(username, password);
+            tetrisUsersTableAdapter.InsertWithCredentials(username, PasswordHasher.HashPassword(password));
 
             this.Close();
         }

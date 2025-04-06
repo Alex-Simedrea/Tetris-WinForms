@@ -26,8 +26,8 @@ namespace Tetris.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=192.168.2.129;Initial Catalog=test;User ID=alex;Password=12345678;Enc" +
-            "rypt=False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=172.20.10.4;Initial Catalog=test;User ID=alex;Password=12345678;Encry" +
+            "pt=False")]
         public string DatabaseConnectionString {
             get {
                 return ((string)(this["DatabaseConnectionString"]));

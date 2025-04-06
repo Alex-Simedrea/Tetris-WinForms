@@ -505,7 +505,7 @@ namespace Tetris {
                 this.columnUsername.AllowDBNull = false;
                 this.columnUsername.MaxLength = 50;
                 this.columnPassword.AllowDBNull = false;
-                this.columnPassword.MaxLength = 50;
+                this.columnPassword.MaxLength = 100;
                 this.columnGold.AllowDBNull = false;
                 this.columnHighScore.AllowDBNull = false;
                 this.columnLevel.AllowDBNull = false;
@@ -968,17 +968,16 @@ SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPower
             this._commandCollection = new global::System.Data.SqlClient.SqlCommand[2];
             this._commandCollection[0] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[0].Connection = this.Connection;
-            this._commandCollection[0].CommandText = "SELECT Id, Username, Password, Gold, HighScore, [Level], AIPowerUps, ClearRowPowe" +
-                "rUps FROM dbo.TetrisUsers";
+            this._commandCollection[0].CommandText = "SELECT Id, Username, Password, Gold, HighScore, Level, AIPowerUps, ClearRowPowerU" +
+                "ps FROM dbo.TetrisUsers";
             this._commandCollection[0].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[1] = new global::System.Data.SqlClient.SqlCommand();
             this._commandCollection[1].Connection = this.Connection;
-            this._commandCollection[1].CommandText = "INSERT INTO [dbo].[TetrisUsers] ([Username], [Password], [Gold], [HighScore], [Le" +
-                "vel], [AIPowerUps], [ClearRowPowerUps]) VALUES (@Username, @Password, 0, 0, 0, 0" +
-                ", 0);";
+            this._commandCollection[1].CommandText = "INSERT INTO TetrisUsers\r\n         (Username, Password, Gold, HighScore, Level, AI" +
+                "PowerUps, ClearRowPowerUps)\r\nVALUES (@Username, @Password, 0, 0, 0, 0, 0)";
             this._commandCollection[1].CommandType = global::System.Data.CommandType.Text;
             this._commandCollection[1].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Username", global::System.Data.SqlDbType.VarChar, 50, global::System.Data.ParameterDirection.Input, 0, 0, "Username", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
-            this._commandCollection[1].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Password", global::System.Data.SqlDbType.VarChar, 50, global::System.Data.ParameterDirection.Input, 0, 0, "Password", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
+            this._commandCollection[1].Parameters.Add(new global::System.Data.SqlClient.SqlParameter("@Password", global::System.Data.SqlDbType.VarChar, 100, global::System.Data.ParameterDirection.Input, 0, 0, "Password", global::System.Data.DataRowVersion.Current, false, null, "", "", ""));
         }
         
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
