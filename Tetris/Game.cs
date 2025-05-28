@@ -32,7 +32,7 @@ namespace Tetris
         private void InitializeGame()
         {
             gameEngine = new TetrisGameEngine();
-            
+
             // Set up the UI controls
             gameEngine.MainCanvas = pictureBox1;
             gameEngine.NextShapeCanvas = pictureBox2;
@@ -50,12 +50,11 @@ namespace Tetris
             gameEngine.GameOver += OnGameOver;
             gameEngine.ScoreChanged += OnScoreChanged;
             gameEngine.LinesCleared += OnLinesCleared;
-            gameEngine.LevelChanged += OnLevelChanged;
 
             // Initialize and start the game
             gameEngine.Initialize();
             gameEngine.Start();
-            
+
             // Set initial AI speed
             if (trackBar1 != null)
             {
@@ -105,22 +104,17 @@ namespace Tetris
             label3.Text = $"Lines cleared: {e.LinesCleared}";
         }
 
-        private void OnLevelChanged(object sender, GameEventArgs e)
-        {
-            // Update level display if needed
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             if (gameEngine.IsPaused)
             {
                 gameEngine.Resume();
-                button1.Text = "Pause";
+                button1.Text = "";
             }
             else
             {
                 gameEngine.Pause();
-                button1.Text = "Resume";
+                button1.Text = "";
             }
         }
 
@@ -131,13 +125,11 @@ namespace Tetris
             {
                 button2.BackColor = Color.Green;
                 button2.ForeColor = Color.White;
-                this.Text = "Tetris - AI Mode";
             }
             else
             {
                 button2.BackColor = SystemColors.Control;
                 button2.ForeColor = SystemColors.ControlText;
-                this.Text = "Tetris";
             }
         }
 
@@ -145,7 +137,6 @@ namespace Tetris
         {
             if (gameEngine != null)
             {
-                // TrackBar controls AI speed (1-10, where 1 is slowest and 10 is fastest)
                 gameEngine.SetAISpeed(trackBar1.Value);
             }
         }

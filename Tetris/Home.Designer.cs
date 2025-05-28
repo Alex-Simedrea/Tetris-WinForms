@@ -272,6 +272,8 @@
             this.Controls.Add(this.label2);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.label1);
+            this.MaximumSize = new System.Drawing.Size(1134, 797);
+            this.MinimumSize = new System.Drawing.Size(1134, 797);
             this.Name = "Home";
             this.Text = "Home";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).EndInit();

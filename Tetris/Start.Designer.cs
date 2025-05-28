@@ -166,6 +166,8 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
+            this.MaximumSize = new System.Drawing.Size(1063, 590);
+            this.MinimumSize = new System.Drawing.Size(1063, 590);
             this.Name = "Start";
             this.Text = "Tetris";
             this.ResumeLayout(false);
