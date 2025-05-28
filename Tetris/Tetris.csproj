@@ -75,6 +75,7 @@
     <Compile Include="LevelGame.Designer.cs">
       <DependentUpon>LevelGame.cs</DependentUpon>
     </Compile>
+    <Compile Include="TetrisGameEngine.cs" />
     <Compile Include="LevelGenerator.cs" />
     <Compile Include="PasswordHasher.cs" />
     <Compile Include="Program.cs" />

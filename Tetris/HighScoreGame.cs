@@ -15,6 +15,7 @@ namespace Tetris
         private TetrisGameEngine gameEngine;
         private DatabaseDataSetTableAdapters.TetrisUsersTableAdapter tetrisUsersTableAdapter = new DatabaseDataSetTableAdapters.TetrisUsersTableAdapter();
         private DatabaseDataSet.TetrisUsersRow user;
+        private Label levelLabel;
 
         public HighScoreGame(int UserID)
         {
@@ -24,6 +25,11 @@ namespace Tetris
 
             this.KeyPreview = true;
 
+            // Wire up button events manually since Designer doesn't have them
+            button1.Click += button1_Click;
+            button2.Click += button2_Click;
+            trackBar1.ValueChanged += trackBar1_ValueChanged;
+
             foreach (Control control in this.Controls)
             {
                 if (control is Button button)
@@ -32,6 +38,9 @@ namespace Tetris
                     button.GotFocus += (s, e) => { ((Button)s).Focus(); };
                 }
             }
+
+            // Add form closing event for confirmation dialog
+            this.FormClosing += HighScoreGame_FormClosing;
 
             InitializeGame();
         }
@@ -45,6 +54,9 @@ namespace Tetris
             gameEngine.NextShapeCanvas = pictureBox2;
             gameEngine.HoldCanvas = pictureBox3;
 
+            // Set window title
+            this.Text = "Tetris - High Score Game";
+
             // Initialize AI speed control trackbar
             if (trackBar1 != null)
             {
@@ -57,16 +69,31 @@ namespace Tetris
             gameEngine.GameOver += OnGameOver;
             gameEngine.ScoreChanged += OnScoreChanged;
             gameEngine.LinesCleared += OnLinesCleared;
-            gameEngine.LevelChanged += OnLevelChanged;
+
+            // Show welcome message
+            MessageBox.Show(
+                $"Welcome to High Score Mode! 🎯\n\n" +
+                $"Current High Score: {user.HighScore:N0}\n\n" +
+                $"Tips:\n" +
+                $"• Try to beat your personal best!\n" +
+                $"• Use 'AI Mode' to watch and learn\n" +
+                $"• Adjust AI speed with the trackbar\n" +
+                $"• Use 'C' to hold pieces\n\n" +
+                $"Good luck, {user.Username}!",
+                "High Score Challenge",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
 
             // Initialize and start the game
             gameEngine.Initialize();
             gameEngine.Start();
             
-            // Set initial AI speed
+            // Set initial AI speed and update label
             if (trackBar1 != null)
             {
                 gameEngine.SetAISpeed(trackBar1.Value);
+                //aiSpeedLabel.Text = $"AI Speed: {trackBar1.Value} ({GetSpeedDescription(trackBar1.Value)})";
             }
         }
 
@@ -98,17 +125,75 @@ namespace Tetris
 
         private void OnGameOver(object sender, GameEventArgs e)
         {
-            if (e.Score > user.HighScore)
+            bool isNewHighScore = e.Score > user.HighScore;
+            
+            if (isNewHighScore)
             {
                 user.HighScore = e.Score;
                 tetrisUsersTableAdapter.Update(user);
-                MessageBox.Show($"Game Over! New high score: {e.Score}!");
+                
+                // Show congratulations message with options
+                var result = MessageBox.Show(
+                    $"🎉 CONGRATULATIONS! 🎉\n\n" +
+                    $"New High Score: {e.Score:N0}\n" +
+                    $"Previous Best: {(e.Score > 0 ? (e.Score - (e.Score - user.HighScore)).ToString("N0") : "0")}\n" +
+                    $"Lines Cleared: {e.LinesCleared}\n" +
+                    $"Level Reached: {e.Level}\n\n" +
+                    $"Would you like to play again?",
+                    "New High Score!",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Exclamation
+                );
+                
+                if (result == DialogResult.Yes)
+                {
+                    RestartGame();
+                    return;
+                }
             }
             else
             {
-                MessageBox.Show($"Game Over! Your score was {e.Score}.");
+                var result = MessageBox.Show(
+                    $"Game Over!\n\n" +
+                    $"Your Score: {e.Score:N0}\n" +
+                    $"High Score: {user.HighScore:N0}\n" +
+                    $"Lines Cleared: {e.LinesCleared}\n" +
+                    $"Level Reached: {e.Level}\n\n" +
+                    $"Would you like to try again?",
+                    "Game Over",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Information
+                );
+                
+                if (result == DialogResult.Yes)
+                {
+                    RestartGame();
+                    return;
+                }
             }
+            
             this.Close();
+        }
+
+        private void RestartGame()
+        {
+            // Stop current game
+            if (gameEngine != null)
+            {
+                gameEngine.Stop();
+            }
+            
+            // Reset UI
+            label1.Text = "Score: 0";
+            label3.Text = "Lines cleared: 0";
+            levelLabel.Text = "Level: 1";
+            
+            button2.BackColor = SystemColors.Control;
+            button2.ForeColor = SystemColors.ControlText;
+            this.Text = "Tetris - High Score Game";
+            
+            // Initialize new game
+            InitializeGame();
         }
 
         private void OnScoreChanged(object sender, GameEventArgs e)
@@ -121,22 +206,17 @@ namespace Tetris
             label3.Text = $"Lines cleared: {e.LinesCleared}";
         }
 
-        private void OnLevelChanged(object sender, GameEventArgs e)
-        {
-            // Update level display if needed
-        }
-
         private void button1_Click(object sender, EventArgs e)
         {
             if (gameEngine.IsPaused)
             {
                 gameEngine.Resume();
-                button1.Text = "Pause";
+                button1.Text = "";
             }
             else
             {
                 gameEngine.Pause();
-                button1.Text = "Resume";
+                button1.Text = "";
             }
         }
 
@@ -147,13 +227,11 @@ namespace Tetris
             {
                 button2.BackColor = Color.Green;
                 button2.ForeColor = Color.White;
-                this.Text = "Tetris - AI Mode";
             }
             else
             {
                 button2.BackColor = SystemColors.Control;
                 button2.ForeColor = SystemColors.ControlText;
-                this.Text = "Tetris";
             }
         }
 
@@ -163,6 +241,37 @@ namespace Tetris
             {
                 // TrackBar controls AI speed (1-10, where 1 is slowest and 10 is fastest)
                 gameEngine.SetAISpeed(trackBar1.Value);
+            }
+        }
+
+        private void HighScoreGame_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Don't show confirmation if game is already over (form closing from game over dialog)
+            if (gameEngine != null && gameEngine.IsGameOver)
+            {
+                return;
+            }
+
+            // Show confirmation dialog for manual close attempts
+            var result = MessageBox.Show(
+                "Are you sure you want to quit the high score game?\n\nYour current progress will be lost, but any new high score achieved will be saved.",
+                "Confirm Quit",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question,
+                MessageBoxDefaultButton.Button2 // Default to "No"
+            );
+
+            // If user clicks "No", cancel the close operation
+            if (result == DialogResult.No)
+            {
+                e.Cancel = true;
+                return;
+            }
+
+            // If user clicks "Yes", proceed with closing and cleanup
+            if (gameEngine != null)
+            {
+                gameEngine.Stop();
             }
         }
     }

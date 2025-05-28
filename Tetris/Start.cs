@@ -45,13 +45,29 @@ namespace Tetris
             if (users == null)
             {
                 MessageBox.Show(Validators.BAD_LOGIN_ERROR);
+
+                // Reset button state when login fails
+                button2.Text = "Login";
+                button2.Enabled = true;
+
+                textBox1.Text = "";
+                textBox2.Text = "";
                 return;
             }
 
             var home = new Home(users.Id);
             home.Show();
             this.Hide();
-            home.FormClosed += (s, args) => this.Show();
+            home.FormClosed += (s, args) =>
+            {
+                // Reset button state when returning from home
+                button2.Text = "Login";
+                button2.Enabled = true;
+                this.Show();
+            };
+
+            textBox1.Text = "";
+            textBox2.Text = "";
         }
 
         private void button1_Click(object sender, EventArgs e)

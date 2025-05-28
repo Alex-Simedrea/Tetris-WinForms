@@ -54,6 +54,11 @@ namespace Tetris
         private bool aiMode = false;
         private Timer aiTimer = new Timer { Interval = 500 };
 
+        // Powerup system
+        private bool aiPowerupActive = false;
+        private Timer aiPowerupTimer = new Timer { Interval = 5000 }; // 5 seconds
+        private bool wasAIModeBeforePowerup = false;
+
         // UI Controls (to be set by the form)
         public PictureBox MainCanvas { get; set; }
         public PictureBox NextShapeCanvas { get; set; }
@@ -79,6 +84,7 @@ namespace Tetris
         public event EventHandler<GameEventArgs> GameStarted;
         public event EventHandler<GameEventArgs> GamePaused;
         public event EventHandler<GameEventArgs> GameResumed;
+        public event EventHandler<GameEventArgs> PowerupUsed;
 
         // Properties
         public int Score => score;
@@ -87,6 +93,7 @@ namespace Tetris
         public bool IsGameOver { get; private set; }
         public bool IsPaused => isPaused;
         public bool IsAIMode => aiMode;
+        public bool IsAIPowerupActive => aiPowerupActive;
         public CanvasBlock[,] Canvas => canvasBlockArray;
         public Shape CurrentShape => currentShape;
         public Shape NextShape => nextShape;
@@ -97,6 +104,7 @@ namespace Tetris
             timer.Tick += Timer_Tick;
             timer.Interval = 500;
             aiTimer.Tick += AiTimer_Tick;
+            aiPowerupTimer.Tick += AiPowerupTimer_Tick;
         }
 
         /// <summary>
@@ -104,9 +112,14 @@ namespace Tetris
         /// </summary>
         public void Initialize(CanvasBlock[,] initialCanvas = null)
         {
+            // Reset game state for fresh start
+            Reset();
+            
             if (initialCanvas != null)
             {
                 canvasBlockArray = initialCanvas;
+                // Ensure no complete rows exist in the initial canvas
+                ValidateInitialCanvas();
             }
             else
             {
@@ -114,11 +127,68 @@ namespace Tetris
             }
 
             LoadCanvas();
+            
+            // If we have a pre-filled canvas, render the existing blocks immediately
+            if (initialCanvas != null)
+            {
+                RedrawCanvas();
+            }
+            
             currentShape = GetRandomShapeWithCenterAligned();
             nextShape = GetNextShape();
             DrawHeldPiece();
+            
+            // Draw the first shape to make it visible immediately
+            if (initialCanvas != null)
+            {
+                DrawShape();
+            }
 
             OnGameStarted();
+        }
+
+        /// <summary>
+        /// Resets the game state for a fresh start
+        /// </summary>
+        private void Reset()
+        {
+            score = 0;
+            linesCleared = 0;
+            IsGameOver = false;
+            isPaused = false;
+            hasHeldThisTurn = false;
+            heldShape = null;
+            currentX = 7;
+            currentY = -1;
+            
+            // Reset powerup state
+            aiPowerupActive = false;
+            wasAIModeBeforePowerup = false;
+            
+            // Reset timer to default speed
+            timer.Interval = 500;
+            
+            // Stop any running timers
+            timer.Stop();
+            aiTimer.Stop();
+            aiPowerupTimer.Stop();
+        }
+
+        /// <summary>
+        /// Validates the initial canvas to ensure no complete rows exist
+        /// </summary>
+        private void ValidateInitialCanvas()
+        {
+            for (int row = 0; row < canvasHeight; row++)
+            {
+                if (IsRowComplete(row))
+                {
+                    // Create a gap in the complete row
+                    int gapPosition = canvasWidth / 2; // Create gap in the middle
+                    canvasBlockArray[gapPosition, row].IsFilled = false;
+                    canvasBlockArray[gapPosition, row].Color = Color.Transparent;
+                }
+            }
         }
 
         /// <summary>
@@ -138,6 +208,7 @@ namespace Tetris
         {
             timer.Stop();
             aiTimer.Stop();
+            aiPowerupTimer.Stop();
         }
 
         /// <summary>
@@ -149,6 +220,7 @@ namespace Tetris
             {
                 timer.Stop();
                 aiTimer.Stop();
+                aiPowerupTimer.Stop();
                 isPaused = true;
                 OnGamePaused();
             }
@@ -164,6 +236,8 @@ namespace Tetris
                 timer.Start();
                 if (aiMode)
                     aiTimer.Start();
+                if (aiPowerupActive)
+                    aiPowerupTimer.Start();
                 isPaused = false;
                 OnGameResumed();
             }
@@ -408,6 +482,12 @@ namespace Tetris
         {
             if (MainCanvas?.Image == null) return;
 
+            // Ensure canvasBitmap is up to date with current blocks
+            if (workingBitmap == null || canvasBitmap == null)
+            {
+                RedrawCanvas();
+            }
+
             workingBitmap = new Bitmap(canvasBitmap);
             workingGraphics = Graphics.FromImage(workingBitmap);
 
@@ -568,11 +648,12 @@ namespace Tetris
         {
             if (MainCanvas?.Image == null) return;
 
+            canvasGraphics = Graphics.FromImage(canvasBitmap);
+            
             for (int i = 0; i < canvasWidth; i++)
             {
                 for (int j = 0; j < canvasHeight; j++)
                 {
-                    canvasGraphics = Graphics.FromImage(canvasBitmap);
                     if (canvasBlockArray[i, j].IsFilled)
                     {
                         using (SolidBrush brush = new SolidBrush(canvasBlockArray[i, j].Color))
@@ -794,6 +875,87 @@ namespace Tetris
             return Math.Max(1, Math.Min(10, (2050 - aiTimer.Interval) / 200));
         }
 
+        /// <summary>
+        /// Activates AI powerup for 5 seconds
+        /// </summary>
+        public void UseAIPowerup()
+        {
+            if (isPaused || IsGameOver || aiPowerupActive) return;
+            
+            // Store current AI mode state
+            wasAIModeBeforePowerup = aiMode;
+            
+            // Activate AI powerup
+            aiPowerupActive = true;
+            aiMode = true;
+            
+            // Start AI timer and powerup timer
+            if (!isPaused)
+            {
+                aiTimer.Start();
+            }
+            aiPowerupTimer.Start();
+            
+            OnPowerupUsed();
+        }
+
+        /// <summary>
+        /// Clears 2 lines from the bottom without giving score or lines cleared count
+        /// </summary>
+        public void UseClearLinePowerup()
+        {
+            if (isPaused || IsGameOver) return;
+            
+            // Clear 2 lines from the bottom
+            int linesCleared = 0;
+            for (int row = canvasHeight - 1; row >= 0 && linesCleared < 2; row--)
+            {
+                // Check if there are any filled blocks in this row
+                bool hasFilledBlocks = false;
+                for (int col = 0; col < canvasWidth; col++)
+                {
+                    if (canvasBlockArray[col, row].IsFilled)
+                    {
+                        hasFilledBlocks = true;
+                        break;
+                    }
+                }
+                
+                if (hasFilledBlocks)
+                {
+                    // Clear this row
+                    for (int col = 0; col < canvasWidth; col++)
+                    {
+                        canvasBlockArray[col, row].IsFilled = false;
+                        canvasBlockArray[col, row].Color = Color.Transparent;
+                    }
+                    
+                    // Shift all rows above down by one
+                    for (int shiftRow = row; shiftRow > 0; shiftRow--)
+                    {
+                        for (int col = 0; col < canvasWidth; col++)
+                        {
+                            canvasBlockArray[col, shiftRow] = canvasBlockArray[col, shiftRow - 1];
+                        }
+                    }
+                    
+                    // Clear the top row
+                    for (int col = 0; col < canvasWidth; col++)
+                    {
+                        canvasBlockArray[col, 0] = new CanvasBlock { IsFilled = false, Color = Color.Transparent };
+                    }
+                    
+                    linesCleared++;
+                    row++; // Check the same row again since we shifted everything down
+                }
+            }
+            
+            // Redraw the canvas to show the changes
+            RedrawCanvas();
+            
+            OnPowerupUsed();
+        }
+
         private void AiTimer_Tick(object sender, EventArgs e)
         {
             if (!aiMode) return;
@@ -821,6 +983,27 @@ namespace Tetris
 
             // Drop the piece
             HardDrop();
+        }
+
+        private void AiPowerupTimer_Tick(object sender, EventArgs e)
+        {
+            // Stop the AI powerup timer
+            aiPowerupTimer.Stop();
+            
+            // End AI powerup
+            aiPowerupActive = false;
+            
+            // Restore previous AI mode state
+            aiMode = wasAIModeBeforePowerup;
+            
+            // Stop AI timer if AI mode was not active before powerup
+            if (!aiMode)
+            {
+                aiTimer.Stop();
+            }
+            
+            // Trigger powerup used event to notify UI
+            OnPowerupUsed();
         }
 
         // Event trigger methods
@@ -867,6 +1050,11 @@ namespace Tetris
         private void OnGameResumed()
         {
             GameResumed?.Invoke(this, CreateGameEventArgs());
+        }
+
+        private void OnPowerupUsed()
+        {
+            PowerupUsed?.Invoke(this, CreateGameEventArgs());
         }
 
         private GameEventArgs CreateGameEventArgs()

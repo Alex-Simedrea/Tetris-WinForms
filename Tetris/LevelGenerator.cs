@@ -17,6 +17,12 @@ public class LevelGenerator
         CheckerboardPattern
     }
 
+    public enum LevelTargetType
+    {
+        Score,
+        LinesCleared
+    }
+
     /// <summary>
     /// Generates a level based on the level index
     /// </summary>
@@ -25,9 +31,12 @@ public class LevelGenerator
     /// <param name="height">Height of the canvas</param>
     /// <param name="scoreTarget">Output score target for this level</param>
     /// <param name="allowedMoves">Output allowed moves for this level</param>
+    /// <param name="targetType">Output target type (score or lines cleared)</param>
+    /// <param name="linesTarget">Output lines cleared target for this level</param>
     /// <returns>A 2D array of CanvasBlocks representing the initial state of the level</returns>
     public static CanvasBlock[,] GenerateLevel(int levelIndex, int width, int height,
-                                              out int scoreTarget, out int allowedMoves)
+                                              out int scoreTarget, out int allowedMoves, 
+                                              out LevelTargetType targetType, out int linesTarget)
     {
         // Initialize the canvas with empty blocks
         CanvasBlock[,] canvas = new CanvasBlock[width, height];
@@ -43,11 +52,11 @@ public class LevelGenerator
             }
         }
 
-        // Calculate difficulty parameters
-        double difficultyFactor = Math.Min(levelIndex / 100.0, 0.9); // Caps at 90% for level 100
+        // Calculate difficulty parameters - much easier curve
+        double difficultyFactor = Math.Min(levelIndex / 200.0, 0.7); // Caps at 70% for level 200 (was 90% at 100)
 
-        // Calculate the fill height based on level index (never above half the grid)
-        int maxFillHeight = height / 2; // Strict limit at half grid height
+        // Calculate the fill height based on level index (much more conservative)
+        int maxFillHeight = Math.Max(2, height / 3); // Allow up to 1/3 height (was 1/2)
         int fillHeight = CalculateFillHeight(levelIndex, height);
 
         // Make sure fill height is within allowed range
@@ -60,49 +69,65 @@ public class LevelGenerator
         int blockCount = FillBaseHeight(canvas, width, height, fillHeight, levelIndex);
 
         // Calculate how much height is left for pattern generation
-        // This ensures patterns only go up to half the grid height at maximum
         int availablePatternHeight = maxFillHeight - fillHeight;
         if (availablePatternHeight > 0)
         {
-            // Only generate patterns if there's space available below the half-height mark
+            // Only generate patterns if there's space available
             blockCount += FillCanvasWithPattern(canvas, patternType, width, height, fillHeight, availablePatternHeight, levelIndex);
         }
 
-        // Calculate score target and allowed moves
+        // Calculate targets and determine target type
         CalculateLevelRequirements(levelIndex, width, height, blockCount,
-                                   out scoreTarget, out allowedMoves);
+                                   out scoreTarget, out allowedMoves, out targetType, out linesTarget);
 
         return canvas;
     }
 
+    /// <summary>
+    /// Generates a level based on the level index (backward compatibility)
+    /// </summary>
+    /// <param name="levelIndex">The index of the level (1-based)</param>
+    /// <param name="width">Width of the canvas</param>
+    /// <param name="height">Height of the canvas</param>
+    /// <param name="scoreTarget">Output score target for this level</param>
+    /// <param name="allowedMoves">Output allowed moves for this level</param>
+    /// <returns>A 2D array of CanvasBlocks representing the initial state of the level</returns>
+    public static CanvasBlock[,] GenerateLevel(int levelIndex, int width, int height,
+                                              out int scoreTarget, out int allowedMoves)
+    {
+        LevelTargetType targetType;
+        int linesTarget;
+        return GenerateLevel(levelIndex, width, height, out scoreTarget, out allowedMoves, out targetType, out linesTarget);
+    }
+
     private static int CalculateFillHeight(int levelIndex, int height)
     {
-        // Ensure we never exceed half the grid height
-        int maxAllowedHeight = height / 2;
+        // Ensure we never exceed 1/3 the grid height (much more conservative)
+        int maxAllowedHeight = Math.Max(2, height / 3);
 
-        // For very early levels, use much smaller fill heights
-        if (levelIndex <= 5)
+        // For very early levels, use minimal fill heights
+        if (levelIndex <= 10)
         {
-            // Levels 1-5: Very minimal fill (5-10% of height)
-            return Math.Min((int)(height * (0.05 + (levelIndex - 1) * 0.01)), maxAllowedHeight);
+            // Levels 1-10: Very minimal fill (2-8% of height)
+            return Math.Min((int)(height * (0.02 + (levelIndex - 1) * 0.006)), maxAllowedHeight);
         }
-        else if (levelIndex <= 20)
+        else if (levelIndex <= 30)
         {
-            // Levels 6-20: Gradually increase (10-25% of height)
-            double percentage = 0.10 + ((levelIndex - 5) * 0.01);
+            // Levels 11-30: Gradually increase (8-15% of height)
+            double percentage = 0.08 + ((levelIndex - 10) * 0.0035);
             return Math.Min((int)(height * percentage), maxAllowedHeight);
         }
-        else if (levelIndex <= 50)
+        else if (levelIndex <= 60)
         {
-            // Levels 21-50: Medium fill (25-35% of height)
-            double percentage = 0.25 + ((levelIndex - 20) * 0.003);
+            // Levels 31-60: Medium fill (15-22% of height)
+            double percentage = 0.15 + ((levelIndex - 30) * 0.0023);
             return Math.Min((int)(height * percentage), maxAllowedHeight);
         }
         else
         {
-            // Levels 51+: Higher fill but never exceeds half height
-            double percentage = 0.35 + ((levelIndex - 50) * 0.002);
-            return Math.Min((int)(height * Math.Min(percentage, 0.5)), maxAllowedHeight);
+            // Levels 61+: Higher fill but never exceeds 1/3 height
+            double percentage = 0.22 + ((levelIndex - 60) * 0.0015);
+            return Math.Min((int)(height * Math.Min(percentage, 0.33)), maxAllowedHeight);
         }
     }
 
@@ -206,14 +231,17 @@ public class LevelGenerator
         Color[] levelColors = GetLevelColors(levelIndex);
         int blockCount = 0;
 
-        // Calculate the density of holes based on level
-        // Lower levels have more holes to make them easier
-        double holeChance = Math.Max(0.05, 0.4 - (levelIndex / 200.0));
+        // Calculate the density of holes based on level - much more holes for easier gameplay
+        double holeChance = Math.Max(0.1, 0.6 - (levelIndex / 300.0)); // More holes, slower decrease
 
         // For very early levels, add even more holes
-        if (levelIndex <= 5)
+        if (levelIndex <= 10)
         {
-            holeChance += 0.2; // 20% more holes in the first 5 levels
+            holeChance += 0.3; // 30% more holes in the first 10 levels (was 20% for 5 levels)
+        }
+        else if (levelIndex <= 20)
+        {
+            holeChance += 0.2; // 20% more holes for levels 11-20
         }
 
         // Fill the bottom portion up to fillHeight
@@ -221,7 +249,7 @@ public class LevelGenerator
         {
             for (int x = 0; x < width; x++)
             {
-                // Introduce some strategic holes
+                // Introduce strategic holes
                 if (random.NextDouble() > holeChance)
                 {
                     canvas[x, y].IsFilled = true;
@@ -232,25 +260,27 @@ public class LevelGenerator
         }
 
         // Ensure that the top row of the filled base has more holes
-        // This makes it easier for the player to start playing
         if (fillHeight > 0)
         {
             int topBaseRow = height - fillHeight;
             for (int x = 0; x < width; x++)
             {
-                if (random.NextDouble() < 0.5) // 50% chance to create a hole (increased from 40%)
+                if (random.NextDouble() < 0.6) // 60% chance to create a hole (increased from 50%)
                 {
-                    canvas[x, topBaseRow].IsFilled = false;
-                    canvas[x, topBaseRow].Color = Color.Transparent;
-                    blockCount--;
+                    if (canvas[x, topBaseRow].IsFilled)
+                    {
+                        canvas[x, topBaseRow].IsFilled = false;
+                        canvas[x, topBaseRow].Color = Color.Transparent;
+                        blockCount--;
+                    }
                 }
             }
 
             // Ensure there are multiple holes in the top row for early levels
-            int guaranteedHoles = Math.Max(2, width / 4);
-            if (levelIndex <= 10)
+            int guaranteedHoles = Math.Max(3, width / 3); // More guaranteed holes
+            if (levelIndex <= 15)
             {
-                guaranteedHoles = Math.Max(3, width / 3); // More guaranteed holes for early levels
+                guaranteedHoles = Math.Max(4, width / 2); // Even more guaranteed holes for early levels
             }
 
             int holesCreated = 0;
@@ -562,34 +592,96 @@ public class LevelGenerator
 
     private static void CalculateLevelRequirements(int levelIndex, int width, int height,
                                                  int blockCount, out int scoreTarget,
-                                                 out int allowedMoves)
+                                                 out int allowedMoves, out LevelTargetType targetType, out int linesTarget)
     {
-        // Calculate score target based on level index and block count
-        // Higher levels require higher scores
-        scoreTarget = 1000 + (levelIndex * 500) + (blockCount * 50);
-
-        // Calculate allowed moves based on level index and block count
-        // Higher levels have fewer moves relative to the challenge
-        int baseAllowedMoves = 30 + (levelIndex * 2);
-
-        // Make early levels more forgiving
-        double difficultyMultiplier = 1.0;
-        if (levelIndex <= 10)
+        // Determine target type based on level index
+        if (levelIndex <= 3)
         {
-            difficultyMultiplier = 1.2; // 20% more moves for early levels
+            // First 3 levels: Score targets only, very easy
+            targetType = LevelTargetType.Score;
+            scoreTarget = 200 + (levelIndex * 100); // 300, 400, 500
+            linesTarget = 0;
+        }
+        else if (levelIndex <= 10)
+        {
+            // Levels 4-10: Score targets, easy
+            targetType = LevelTargetType.Score;
+            scoreTarget = 500 + (levelIndex * 150); // 650, 800, 950, etc.
+            linesTarget = 0;
+        }
+        else if (levelIndex <= 20)
+        {
+            // Levels 11-20: Mix of score and lines targets
+            if (levelIndex % 2 == 0)
+            {
+                targetType = LevelTargetType.LinesCleared;
+                linesTarget = Math.Max(1, (levelIndex - 10) / 2); // 1, 2, 3, 4, 5 lines
+                scoreTarget = 0;
+            }
+            else
+            {
+                targetType = LevelTargetType.Score;
+                scoreTarget = 800 + (levelIndex * 200);
+                linesTarget = 0;
+            }
         }
         else
         {
-            difficultyMultiplier = Math.Max(0.6, 1.0 - (levelIndex / 200.0)); // Decreases with level
+            // Levels 21+: Alternating targets with moderate difficulty
+            if (levelIndex % 3 == 0)
+            {
+                targetType = LevelTargetType.LinesCleared;
+                linesTarget = Math.Max(2, (levelIndex - 15) / 3); // Progressive lines target
+                scoreTarget = 0;
+            }
+            else
+            {
+                targetType = LevelTargetType.Score;
+                scoreTarget = 1000 + (levelIndex * 250) + (blockCount * 30); // More achievable
+                linesTarget = 0;
+            }
         }
 
-        // Adjust moves based on block count - more blocks means more moves needed
-        int blockCountAdjustment = blockCount / 4; // Increased adjustment (was /5)
+        // Calculate allowed moves - make it much more reasonable
+        int baseAllowedMoves;
+        if (levelIndex <= 5)
+        {
+            baseAllowedMoves = 15 + (levelIndex * 3); // 18, 21, 24, 27, 30 moves
+        }
+        else if (levelIndex <= 15)
+        {
+            baseAllowedMoves = 25 + (levelIndex * 2); // 27, 29, 31, etc.
+        }
+        else
+        {
+            baseAllowedMoves = 40 + levelIndex; // More reasonable progression
+        }
+
+        // Adjust moves based on block count - but much less generous
+        int blockCountAdjustment = blockCount / 8; // Much less generous (was /2)
+
+        // Apply difficulty multiplier - more reasonable
+        double difficultyMultiplier = 1.2; // Base 20% more moves (was 50%)
+        if (levelIndex <= 5)
+        {
+            difficultyMultiplier = 1.4; // 40% more moves for first 5 levels (was 100%)
+        }
+        else if (levelIndex <= 15)
+        {
+            difficultyMultiplier = 1.3; // 30% more moves for early levels (was 70%)
+        }
 
         allowedMoves = (int)((baseAllowedMoves + blockCountAdjustment) * difficultyMultiplier);
 
-        // Ensure minimum values
-        scoreTarget = Math.Max(1000, scoreTarget);
-        allowedMoves = Math.Max(20, allowedMoves); // Increased minimum from 15 to 20
+        // Ensure minimum values - more reasonable
+        if (targetType == LevelTargetType.Score)
+        {
+            scoreTarget = Math.Max(200, scoreTarget);
+        }
+        else
+        {
+            linesTarget = Math.Max(1, linesTarget);
+        }
+        allowedMoves = Math.Max(15, allowedMoves); // Reduced minimum from 40 to 15
     }
 }

@@ -23,12 +23,8 @@ namespace Tetris
             InitializeComponent();
             this.user = tetrisUsersTableAdapter.GetData().FirstOrDefault(x => x.Id == id);
 
-            this.label12.Text = $"Hello, {user.Username}!";
-            this.label2.Text = $"{user.Gold} gold";
-            this.label4.Text = $"{user.AIPowerUps} remaining";
-            this.label5.Text = $"{user.ClearRowPowerUps} remaining";
-            this.label9.Text = $"Level {user.Level}";
-            this.label10.Text = $"{user.HighScore} points";
+            // Use RefreshUserDisplay for consistent formatting
+            RefreshUserDisplay();
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -63,9 +59,7 @@ namespace Tetris
 
         private void UpdateShopTexts()
         {
-            this.label2.Text = $"{user.Gold} gold";
-            this.label4.Text = $"{user.AIPowerUps} remaining";
-            this.label5.Text = $"{user.ClearRowPowerUps} remaining";
+            RefreshUserDisplay();
         }
 
         private void button4_Click(object sender, EventArgs e)
@@ -73,7 +67,12 @@ namespace Tetris
             var highScoreGame = new HighScoreGame(user.Id);
             highScoreGame.Show();
             this.Hide();
-            highScoreGame.FormClosed += (s, args) => this.Show();
+            highScoreGame.FormClosed += (s, args) => {
+                // Refresh user data when returning from high score game
+                this.user = tetrisUsersTableAdapter.GetData().FirstOrDefault(x => x.Id == user.Id);
+                RefreshUserDisplay();
+                this.Show();
+            };
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -81,7 +80,26 @@ namespace Tetris
             var levelGame = new LevelGame(user.Id);
             levelGame.Show();
             this.Hide();
-            levelGame.FormClosed += (s, args) => this.Show();
+            levelGame.FormClosed += (s, args) => {
+                // Refresh user data when returning from level game
+                this.user = tetrisUsersTableAdapter.GetData().FirstOrDefault(x => x.Id == user.Id);
+                RefreshUserDisplay();
+                this.Show();
+            };
+        }
+
+        private void RefreshUserDisplay()
+        {
+            this.label12.Text = $"Hello, {user.Username}!";
+            this.label2.Text = $"{user.Gold} gold";
+            this.label4.Text = $"{user.AIPowerUps} remaining";
+            this.label5.Text = $"{user.ClearRowPowerUps} remaining";
+            
+            // Show next level to play (user.Level + 1, or 1 if they haven't completed any)
+            int nextLevel = Math.Max(1, user.Level + 1);
+            this.label9.Text = $"Next Level: {nextLevel}";
+            
+            this.label10.Text = $"{user.HighScore} points";
         }
     }
 }
